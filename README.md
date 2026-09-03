@@ -1,40 +1,93 @@
-# IS2RE: Fine-tuning DimeNet++ for Out-of-Distribution Catalysis
+# IS2RE: Fine-Tuning a Pretrained Catalyst GNN
 
-**Where the OC20 100k champion learns to handle the chemistry it never saw.**
+A graph neural network project built on the Open Catalyst 2020 (OC20) dataset,
+exploring how well a pretrained model transfers to unseen catalyst chemistry
+through fine-tuning.
 
-A small, self-contained, fully reproducible study: take the pretrained
-DimeNet++ IS2RE model, fine-tune it on a **stratified, system-level** subsample of
-OC20 `val_ood_both` — the toughest out-of-distribution split (unseen adsorbate +
-unseen catalyst) — and measure just how much a little fine-tuning closes the gap.
+## Overview
 
-## The payoff
+This project fine-tunes a pretrained Graph Neural Network on a held-out,
+out-of-distribution subset of OC20 and compares multiple fine-tuning
+strategies against a zero-shot baseline. The goal is to measure how much of a
+pretrained model's performance carries over to unseen adsorbate and catalyst
+combinations, and how much of the network actually needs to be retrained to
+recover that performance.
 
-Fine-tuning on 8,250 OOD systems cuts held-out MAE by ~21%:
+## Task
 
-| Variant | test MAE (eV) | EwT (0.02 eV) |
-| --- | --- | --- |
-| zero-shot (pretrained) | 0.6908 | 2.85% |
-| frozen-backbone | 0.5517 | 3.09% |
-| full fine-tune | 0.5411 | 3.15% |
+The project targets **IS2RE (Initial Structure to Relaxed Energy)**, one of
+the core tasks defined in the OC20 benchmark.
 
-Notably, freezing the whole message-passing backbone and training only the 4
-energy readout layers recovers almost all of the gain — the head does the heavy
-lifting.
+**Input**
+- Atomic numbers for every atom in the system
+- 3D atomic positions (the unrelaxed, initial structure)
+- Atom tags indicating bulk, surface, or adsorbate atoms
+- Periodic cell information
 
-## What's inside
+**Output**
+- A single scalar value: the predicted relaxed adsorption energy (eV)
 
-- `scripts/` — zero-shot eval, fine-tune (frozen or full), shared test eval, and an
-  end-to-end runner. W&B logging on (offline-friendly).
-- `models/` — the registered frozen-backbone DimeNet++ variant.
-- `data/` — download + stratified subsampling (joins `oc20_data_mapping.pkl` for
-  real adsorbate/catalyst stratification; no `sid` leaks across splits).
-- `configs/` — the two fine-tuning recipes.
+The model never sees a relaxation trajectory or intermediate structures. It
+predicts the final relaxed energy directly from the initial geometry.
 
-## Run it
+## Approach
 
-```bash
-bash scripts/run_experiments.sh          # download -> subsample -> train -> eval
+- **Base model**: DimeNet++, pretrained on 100k OC20 IS2RE structures
+- **Fine-tuning data**: a stratified, held-out subset of OC20's `val_ood_both`
+  split, containing adsorbates and catalyst compositions not seen during
+  pretraining
+- **Variants compared**:
+  - Zero-shot: the pretrained model, evaluated with no fine-tuning
+  - Frozen-backbone fine-tune: only the final output layers are retrained,
+    the rest of the network stays frozen
+  - Full fine-tune: every parameter in the network is retrained
+
+## Results
+
+Evaluated on a held-out test split of 1,650 systems, never used during
+training or model selection.
+
+| Variant | Trainable params | Test MAE (eV) | Test EwT (0.02 eV) |
+|---|---|---|---|
+| Zero-shot | 0 / 2,755,462 | 0.6908 | 2.85% |
+| Frozen-backbone fine-tune | 648,960 / 2,755,462 | 0.5517 | 3.09% |
+| Full fine-tune | 2,755,462 / 2,755,462 | 0.5411 | 3.15% |
+
+Fine-tuning reduces test MAE by 21.7% relative to the zero-shot baseline.
+Frozen-backbone fine-tuning, retraining only 23.5% of the network's
+parameters, recovers most of that improvement. Full fine-tuning adds a
+further, smaller gain on top.
+
+### Data split
+
+| Split | Systems |
+|---|---|
+| Train | 8,250 |
+| Validation | 1,100 |
+| Test | 1,650 |
+
+All splits are drawn from OC20's `val_ood_both` set and split at the system
+level, so no structure appears in more than one split.
+
+## Tech Stack
+
+- PyTorch
+- fairchem-core (OC20 model implementations and pretrained checkpoints)
+- PyTorch Geometric
+- Weights and Biases (experiment tracking)
+- Conda (environment management)
+
+## Project Structure
+
+```
+configs/      model and training configs
+data/         download and preprocessing scripts
+models/       model definitions and fine-tuning logic
+scripts/      training, evaluation, and experiment orchestration
+results/      final metrics and comparisons
 ```
 
-Everything is pinned and reproducible: one shared W&B project
-(`is2re-finetune`), fixed seed, and results in `results/comparison.txt`.
+## Status
+
+Core experiment complete. Documentation, setup instructions, and additional
+tooling in progress.
