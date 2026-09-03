@@ -1,0 +1,28 @@
+# Environments
+.venv/
+conda-env/
+
+# Python
+__pycache__/
+*.pyc
+
+# Downloads / checkpoints
+.cache/
+*.pt
+
+# Experiment outputs
+runs/
+results/
+wandb/
+
+# Data artifacts (keep the scripts; ignore the data)
+*.lmdb
+*.lmdb-lock
+*.tar.gz
+data/raw/
+data/subsample/
+data/*/metadata.npz
+data/*/data.lmdb
+
+# Planning doc (not needed in the repo)
+implementation.md
