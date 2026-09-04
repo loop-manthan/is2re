@@ -1,0 +1,7 @@
+# Web layer for the IS2RE demo backend.
+# The ML dependencies (torch, fairchem-core, torch-geometric, lmdb, ...) come from
+# the project conda environment; this file lists only what the demo adds.
+fastapi>=0.110
+uvicorn[standard]>=0.29
+pydantic>=2
+pytest>=8

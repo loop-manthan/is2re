@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Initial Structure to Relaxed Energy Demo</title>
+  <link rel="stylesheet" href="/style.css">
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+</head>
+<body>
+  <div id="error-banner" class="hidden">Backend not reachable. Make sure the FastAPI server is running.</div>
+
+  <header>
+    <h1>Initial Structure to Relaxed Energy</h1>
+    <p class="subtitle">Three fine-tuning strategies on unseen catalyst chemistry.</p>
+  </header>
+
+  <main>
+    <aside id="sidebar">
+      <div class="panel-title">Test structures</div>
+      <ul id="structure-list"></ul>
+      <div id="list-status" class="muted">Loading</div>
+    </aside>
+
+    <section id="main-panel">
+      <div id="viewer-wrap">
+        <div id="viewer-meta" class="muted">Select a structure.</div>
+        <div id="viewer"></div>
+        <div id="legend">
+          <span><i class="mark mark-bulk"></i>Bulk</span>
+          <span><i class="mark mark-surface"></i>Surface</span>
+          <span><i class="mark mark-adsorbate"></i>Adsorbate</span>
+          <span class="legend-note">Atoms colored by element. Edges within cutoff.</span>
+        </div>
+      </div>
+
+      <div id="results">
+        <div class="panel-title">Predictions vs ground truth</div>
+        <div id="results-body">
+          <div class="muted">No structure selected.</div>
+        </div>
+      </div>
+
+      <details id="model-info">
+        <summary>Project results (aggregate test metrics)</summary>
+        <table>
+          <thead>
+            <tr>
+              <th>Variant</th>
+              <th>Trainable params</th>
+              <th>Test MAE (eV)</th>
+              <th>EwT (0.02 eV)</th>
+            </tr>
+          </thead>
+          <tbody id="model-info-body"></tbody>
+        </table>
+      </details>
+    </section>
+  </main>
+
+  <script type="module" src="/app.js"></script>
+</body>
+</html>

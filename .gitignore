@@ -5,6 +5,7 @@ conda-env/
 # Python
 __pycache__/
 *.pyc
+.pytest_cache/
 
 # Downloads / checkpoints
 .cache/

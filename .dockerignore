@@ -1,0 +1,13 @@
+# Keep the Docker build context small: code only.
+.venv/
+conda-env/
+.cache/
+data/
+runs/
+results/
+wandb/
+**/__pycache__/
+*.pt
+*.lmdb
+*.tar.gz
+.git/
